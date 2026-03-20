@@ -1,0 +1,60 @@
+rules:
+  - id: pentest-kit.crypto.weak-hash-md5
+    pattern-either:
+      - pattern: hashlib.md5(...)
+      - pattern: MD5.new(...)
+      - pattern: crypto.createHash("md5")
+    message: >
+      MD5 is cryptographically broken. Use SHA-256 or bcrypt for passwords.
+    severity: WARNING
+    languages: [python, javascript, typescript]
+    metadata:
+      category: security
+      cwe: ["CWE-328"]
+
+  - id: pentest-kit.crypto.weak-hash-sha1
+    pattern-either:
+      - pattern: hashlib.sha1(...)
+      - pattern: SHA.new(...)
+      - pattern: crypto.createHash("sha1")
+    message: >
+      SHA-1 is deprecated. Use SHA-256 or stronger.
+    severity: WARNING
+    languages: [python, javascript, typescript]
+    metadata:
+      category: security
+      cwe: ["CWE-328"]
+
+  - id: pentest-kit.crypto.hardcoded-secret
+    pattern-either:
+      - pattern: |
+          $KEY = "..."
+          ...
+          jwt.encode(..., $KEY, ...)
+      - pattern: |
+          SECRET_KEY = "..."
+      - pattern: |
+          $VAR = "sk_live_..."
+      - pattern: |
+          $VAR = "AKIA..."
+    message: >
+      Hardcoded secret detected. Use environment variables or a secret manager.
+    severity: ERROR
+    languages: [python, javascript, typescript, java, go, ruby]
+    metadata:
+      category: security
+      cwe: ["CWE-798"]
+      owasp: ["A07:2021"]
+
+  - id: pentest-kit.crypto.weak-random
+    pattern-either:
+      - pattern: random.random()
+      - pattern: random.randint(...)
+      - pattern: Math.random()
+    message: >
+      Using weak random for security-sensitive operation. Use secrets module (Python) or crypto.randomBytes (JS).
+    severity: WARNING
+    languages: [python, javascript, typescript]
+    metadata:
+      category: security
+      cwe: ["CWE-330"]

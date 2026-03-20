@@ -1,0 +1,56 @@
+rules:
+  - id: pentest-kit.sqli.string-concat-query
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $QUERY = "..." + $INPUT + "..."
+              ...
+              $CURSOR.execute($QUERY, ...)
+          - pattern: |
+              $QUERY = f"...{$INPUT}..."
+              ...
+              $CURSOR.execute($QUERY, ...)
+          - pattern: |
+              $QUERY = "...%s..." % $INPUT
+              ...
+              $CURSOR.execute($QUERY, ...)
+    message: >
+      SQL query built with string concatenation. Use parameterized queries instead.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: ["CWE-89"]
+      owasp: ["A03:2021"]
+      confidence: HIGH
+
+  - id: pentest-kit.sqli.raw-query-django
+    patterns:
+      - pattern: |
+          $MODEL.objects.raw($QUERY)
+      - metavariable-pattern:
+          metavariable: $QUERY
+          pattern-not: |
+            "..."
+    message: >
+      Django raw() with dynamic query. Use parameterized queries.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: ["CWE-89"]
+
+  - id: pentest-kit.sqli.execute-format-string-js
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $DB.query(`...${$INPUT}...`)
+          - pattern: |
+              $DB.query("..." + $INPUT + "...")
+    message: >
+      SQL query built with template literal or concatenation. Use parameterized queries.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      cwe: ["CWE-89"]

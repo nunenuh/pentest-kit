@@ -1,0 +1,81 @@
+id: pentest-kit-security-headers
+
+info:
+  name: Missing Security Headers Check
+  author: pentest-kit
+  severity: medium
+  description: Checks for missing security headers on web applications
+  tags: headers,security,pentest-kit
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    matchers-condition: or
+    matchers:
+      - type: dsl
+        name: missing-csp
+        dsl:
+          - "!contains(tolower(header), 'content-security-policy')"
+        severity: medium
+
+      - type: dsl
+        name: missing-hsts
+        dsl:
+          - "!contains(tolower(header), 'strict-transport-security')"
+        severity: medium
+
+      - type: dsl
+        name: missing-x-frame-options
+        dsl:
+          - "!contains(tolower(header), 'x-frame-options')"
+        severity: low
+
+      - type: dsl
+        name: missing-x-content-type
+        dsl:
+          - "!contains(tolower(header), 'x-content-type-options')"
+        severity: low
+
+---
+
+id: pentest-kit-server-info-leak
+
+info:
+  name: Server Information Disclosure
+  author: pentest-kit
+  severity: info
+  description: Server header reveals technology and version
+  tags: info-disclosure,pentest-kit
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    matchers-condition: or
+    matchers:
+      - type: regex
+        name: server-version
+        part: header
+        regex:
+          - "(?i)server: .+/.+"
+
+      - type: regex
+        name: x-powered-by
+        part: header
+        regex:
+          - "(?i)x-powered-by: .+"
+
+      - type: regex
+        name: x-aspnet-version
+        part: header
+        regex:
+          - "(?i)x-aspnet(mvc)?-version: .+"
+
+    extractors:
+      - type: kval
+        kval:
+          - server
+          - x_powered_by

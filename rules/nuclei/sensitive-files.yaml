@@ -1,0 +1,70 @@
+id: pentest-kit-sensitive-files
+
+info:
+  name: Sensitive File Exposure
+  author: pentest-kit
+  severity: high
+  description: Checks for commonly exposed sensitive files
+  tags: exposure,files,pentest-kit
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/.env"
+      - "{{BaseURL}}/.git/config"
+      - "{{BaseURL}}/.git/HEAD"
+      - "{{BaseURL}}/wp-config.php.bak"
+      - "{{BaseURL}}/config.php.bak"
+      - "{{BaseURL}}/.htpasswd"
+      - "{{BaseURL}}/backup.sql"
+      - "{{BaseURL}}/dump.sql"
+      - "{{BaseURL}}/database.sql"
+      - "{{BaseURL}}/.DS_Store"
+      - "{{BaseURL}}/phpinfo.php"
+      - "{{BaseURL}}/server-status"
+      - "{{BaseURL}}/debug"
+      - "{{BaseURL}}/.well-known/security.txt"
+      - "{{BaseURL}}/robots.txt"
+      - "{{BaseURL}}/sitemap.xml"
+      - "{{BaseURL}}/crossdomain.xml"
+      - "{{BaseURL}}/swagger.json"
+      - "{{BaseURL}}/openapi.json"
+      - "{{BaseURL}}/api-docs"
+
+    stop-at-first-match: false
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: dsl
+        dsl:
+          - "len(body) > 0"
+
+---
+
+id: pentest-kit-backup-files
+
+info:
+  name: Backup File Detection
+  author: pentest-kit
+  severity: medium
+  description: Checks for backup files that may contain source code
+  tags: exposure,backup,pentest-kit
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/{{Path}}.bak"
+      - "{{BaseURL}}/{{Path}}.old"
+      - "{{BaseURL}}/{{Path}}.orig"
+      - "{{BaseURL}}/{{Path}}.save"
+      - "{{BaseURL}}/{{Path}}~"
+      - "{{BaseURL}}/{{Path}}.swp"
+
+    matchers:
+      - type: status
+        status:
+          - 200

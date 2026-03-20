@@ -1,0 +1,65 @@
+rules:
+  - id: pentest-kit.auth.missing-auth-decorator
+    patterns:
+      - pattern: |
+          @app.route(...)
+          def $FUNC(...):
+              ...
+      - pattern-not: |
+          @login_required
+          @app.route(...)
+          def $FUNC(...):
+              ...
+      - pattern-not: |
+          @app.route(...)
+          def login(...):
+              ...
+      - pattern-not: |
+          @app.route(...)
+          def health(...):
+              ...
+    message: >
+      Route handler without authentication decorator. Verify this endpoint should be public.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      cwe: ["CWE-306"]
+      confidence: LOW
+
+  - id: pentest-kit.auth.password-in-log
+    pattern-either:
+      - pattern: |
+          logging.$METHOD(..., password=..., ...)
+      - pattern: |
+          print(..., $PASSWORD, ...)
+      - pattern: |
+          logger.$METHOD(f"...{$PASSWORD}...")
+      - pattern: |
+          console.log(..., password, ...)
+    message: >
+      Password or credential may be logged. Remove sensitive data from log statements.
+    severity: ERROR
+    languages: [python, javascript, typescript]
+    metadata:
+      category: security
+      cwe: ["CWE-532"]
+
+  - id: pentest-kit.auth.cors-wildcard
+    pattern-either:
+      - pattern: |
+          "Access-Control-Allow-Origin": "*"
+      - pattern: |
+          CORS(app, origins="*")
+      - pattern: |
+          cors({ origin: "*" })
+      - pattern: |
+          @CrossOrigin(origins = "*")
+    message: >
+      CORS allows all origins. Restrict to specific trusted domains.
+    severity: WARNING
+    languages: [python, javascript, typescript, java]
+    metadata:
+      category: security
+      cwe: ["CWE-942"]
+      owasp: ["A05:2021"]

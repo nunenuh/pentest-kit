@@ -1,0 +1,50 @@
+rules:
+  - id: pentest-kit.jwt.algorithm-none
+    pattern-either:
+      - pattern: jwt.decode(..., algorithms=["none"], ...)
+      - pattern: jwt.decode(..., algorithms=["None"], ...)
+      - pattern: jwt.decode(..., options={"verify_signature": False}, ...)
+    message: >
+      JWT decoded with algorithm 'none' or signature verification disabled. This allows token forgery.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: ["CWE-347"]
+
+  - id: pentest-kit.jwt.no-expiry-check
+    patterns:
+      - pattern: jwt.decode(..., options={"verify_exp": False}, ...)
+    message: >
+      JWT expiry verification disabled. Tokens will be accepted even after expiration.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      cwe: ["CWE-613"]
+
+  - id: pentest-kit.jwt.hardcoded-secret
+    patterns:
+      - pattern: |
+          jwt.encode($PAYLOAD, "...", ...)
+      - pattern-not: |
+          jwt.encode($PAYLOAD, $ENV_VAR, ...)
+    message: >
+      JWT signed with hardcoded secret. Use environment variable or key management service.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: ["CWE-798"]
+
+  - id: pentest-kit.jwt.weak-algorithm-hs256
+    pattern-either:
+      - pattern: jwt.encode(..., algorithm="HS256")
+      - pattern: jwt.sign(..., { algorithm: "HS256" })
+    message: >
+      HS256 uses symmetric signing. Consider RS256 (asymmetric) for distributed systems.
+    severity: INFO
+    languages: [python, javascript, typescript]
+    metadata:
+      category: security
+      cwe: ["CWE-327"]
